@@ -1,0 +1,761 @@
+---
+output:
+  pdf_document:
+    latex_engine: xelatex
+mainfont: "Arial"
+geometry: "left=1.5cm,right=1.5cm,top=0.1cm,bottom=0.1cm"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, dev = "cairo_pdf")
+library(tidyverse)
+library(patchwork)
+library(readxl)
+dummy_data <- read_excel("dummy_data.xlsx")
+```
+---
+title: | 
+  | \vspace{-0.75cm} \Large `r paste(dummy_data$Vorname, dummy_data$Name)`
+  | \vspace{-0.05cm} \Large `r paste("geboren am", dummy_data$Geburtsdatum)` 
+date: `r format(Sys.Date(), "%d.%m.%Y")`
+---
+
+```{r}
+# generate GAF plot
+
+GAF_data <- dummy_data %>%
+  select(GAF_lifetime, GAF_follow_up) %>%
+  pivot_longer(cols = c(GAF_lifetime, GAF_follow_up))
+
+GAF_plot <- GAF_data %>%
+  ggplot(., aes(
+    label = value,
+    x = factor(name, levels = c("GAF_lifetime", "GAF_follow_up")),
+    y = value
+  )) +
+  xlab("Zeit") +
+  ylab("Funktionsniveau\n") +
+  scale_y_continuous(limits = c(0, 100)) +
+  geom_text(hjust = 0.1, vjust = -1.5) +
+  geom_segment(aes(
+    # horizontal segment until first value
+    x = 0,
+    xend = 1,
+    y = value[1],
+    yend = value[1]
+  ),
+  colour = "#0073C2FF",
+  size = 1.1) +
+  geom_segment(
+    aes(
+      # vertical segment in between
+      x = 1,
+      xend = 1,
+      y = value[1],
+      yend = value[2]
+    ),
+    colour = "#0073C2FF",
+    size = 1.1,
+    linetype = "dashed"
+  ) +
+  geom_segment(aes(
+    # horizontal segment until second value
+    x = 1,
+    xend = 2,
+    y = value[2],
+    yend = value[2]
+  ),
+  colour = "#0073C2FF",
+  size = 1.1) +
+  geom_point(size = 4.75, color = "#868686FF") +
+  annotate(
+    "text",
+    y = (GAF_data$value[1] + GAF_data$value[2]) / 2,
+    x = 1.375,
+    label = paste0("- ",  100 * round((GAF_data$value[1] - GAF_data$value[2]) / GAF_data$value[1], 2
+    ), "%")
+  ) +
+  theme_bw() +
+  theme(
+    axis.ticks.x =  element_blank(),
+    axis.text = element_text(size = 10, color = "black"),
+    axis.text.x = element_blank(),
+    axis.title = element_text(size = 10),
+ panel.border = element_rect(colour = "black"),
+ plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(0,0,0,0), "cm")
+
+  ) +
+ labs(caption = "\nGAF (Global Assessment of Functioning): \nErfassung des allgemeinen Funktionsniveau")
+
+PID_data <- dummy_data %>%
+  select(matches("PID")) %>%
+  select(-PID_gesamt) %>%
+  pivot_longer(cols = matches("PID")) %>%
+  mutate(name = str_to_title(str_replace(
+    str_replace(name, pattern = "PID_", ""), "_", " "
+  )))
+
+PID_plot <- PID_data %>%
+  ggplot(., aes(
+    y = factor(name, levels = sort(name, decreasing = TRUE)),
+    x = value,
+    color = name,
+    fill = name
+  )) +
+  scale_x_continuous(limits = c(0,15), breaks = seq(0,15,5)) +
+  geom_point(size = 4.75) +
+  geom_segment(aes(
+    x = 0,
+    xend = value,
+    y = name ,
+    yend = name),
+    size = 1.1) +
+  ylab("") +
+  xlab("Wert") +
+  scale_color_manual( values = c("#0073C2FF" ,"#EFC000FF" ,"#868686FF" ,"#CD534CFF" ,"#7AA6DCFF")) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 10, color = "black"),
+    axis.title = element_text(size = 10),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(0,0,0,0), "cm"),
+  legend.position = "none"
+  ) +
+  labs(caption = "\nPID-5 BF (Personality Inventory for DSM-5–brief form): \nProfil maladaptiver Persönlichkeitseigenschaften nach DSM-5")
+
+
+HAM_D_data <- dummy_data %>% 
+  select(HAM_D) %>%
+  pivot_longer(HAM_D) %>%
+  mutate(name = str_replace(name, "_", "-"))
+  
+
+
+HAM_D_plot <- HAM_D_data %>%
+  ggplot(., aes(x = value, y = name)) +
+  annotate(
+    "text",
+    x = c(3.5, 10, 15.5, 20, 23.5),
+    y = 2.05,
+    label = c("unauffällig", "leicht", "mittel", "schwer", "sehr schwer")
+  ) +
+    geom_segment(aes(
+    x = 0,
+    xend = 25,
+    y = 1 ,
+    yend = 1
+  ),
+  size = 1,
+  color = "#3B3B3BBF") +
+
+  geom_segment(
+    aes(
+      x = 0,
+      xend = 0,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 7,
+      xend = 7,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 13,
+      xend = 13,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  
+  geom_segment(
+    aes(
+      x = 18,
+      xend = 18,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  geom_segment(
+    aes(
+      x = 22,
+      xend = 22,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 25,
+      xend = 25,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 18,
+      xend = 18,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  geom_segment(
+    aes(
+      x = 22,
+      xend = 22,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  scale_x_continuous(
+    limits = c(-0.25, 25.25),
+    breaks = c(0, 7, 13, 18, 22, 25),
+    expand = c(0, 0)
+  ) +
+geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
+    scale_y_continuous(
+    limits = c(0,2.25),
+    breaks = c(1),
+    labels = "HAM-D",
+    expand = c(0, 0)
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 10, color = "black"),
+    axis.text.x = element_text(size = 10, color = "black"),
+    axis.title = element_blank(),
+  #  axis.line.y = element_line(color = "white"),
+    panel.background = element_blank(),
+    panel.border = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(0, 0, 0, 0), "cm"),
+    legend.position = "none"
+  ) +
+  labs(caption = "HAM-D (Hamilton Rating Scale for Depression): Ermittlung des Schweregrads einer depressiven Störung (Fremdbewertung)")
+
+
+
+
+QIDS_data <- dummy_data %>% 
+  select(QIDS) %>%
+  pivot_longer(QIDS) %>%
+  mutate(name = str_replace(name, "_", "-"))
+  
+
+
+QIDS_plot <- QIDS_data %>%
+  ggplot(., aes(x = value, y = name)) +
+  annotate(
+    "text",
+    x = c(2.5, 8, 13, 18, 24),
+    y = 2.05,
+    label = c("keine", "leicht", "mittel", "schwer", "sehr schwer")
+  ) +
+    geom_segment(aes(
+    x = 0,
+    xend = 27,
+    y = 1 ,
+    yend = 1
+  ),
+  size = 1,
+  color = "#3B3B3BBF") +
+
+  geom_segment(
+    aes(
+      x = 0,
+      xend = 0,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 5,
+      xend = 5,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 10,
+      xend = 10,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  
+  geom_segment(
+    aes(
+      x = 15,
+      xend = 15,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  geom_segment(
+    aes(
+      x = 20,
+      xend = 20,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 27,
+      xend = 27,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  scale_x_continuous(
+    limits = c(-0.25, 27.25),
+    breaks = c(0, 5, 10, 15, 20, 27),
+    expand = c(0, 0)
+  ) +
+geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
+    scale_y_continuous(
+    limits = c(0,2.25),
+    breaks = c(1),
+    labels = "QIDS",
+    expand = c(0, 0)
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 10, color = "black"),
+    axis.text.x = element_text(size = 10, color = "black"),
+    axis.title = element_blank(),
+  #  axis.line.y = element_line(color = "white"),
+    panel.background = element_blank(),
+    panel.border = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(1, 0, 0, 0), "cm"),
+    legend.position = "none"
+  ) +
+  labs(caption = "QIDS (Quick Inventory of Depressive Symptomatology): Ermittlung des Schweregrads einer depressiven (Selbstbewertung)")
+
+
+HAM_A_data <- dummy_data %>% 
+  select(HAM_A) %>%
+  pivot_longer(HAM_A) %>%
+  mutate(name = str_replace(name, "_", "-"))
+  
+
+
+HAM_A_plot <- HAM_A_data %>%
+  ggplot(., aes(x = value, y = name)) +
+  annotate(
+    "text",
+    x = c(3.5, 11, 19, 40),
+    y = 2.05,
+    label = c("unauffällig", "leicht", "mittel", "schwer")
+  ) +
+    geom_segment(aes(
+    x = 0,
+    xend = 56,
+    y = 1 ,
+    yend = 1
+  ),
+  size = 1,
+  color = "#3B3B3BBF") +
+
+  geom_segment(
+    aes(
+      x = 0,
+      xend = 0,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 7,
+      xend = 7,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 14,
+      xend = 14,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  geom_segment(
+    aes(
+      x = 23,
+      xend = 23,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 56,
+      xend = 56,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  scale_x_continuous(
+    limits = c(-0.25, 56.25),
+    breaks = c(0, 7, 14, 23, 56),
+    expand = c(0, 0)
+  ) +
+geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
+    scale_y_continuous(
+    limits = c(0,2.25),
+    breaks = c(1),
+    labels = "HAM-D",
+    expand = c(0, 0)
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 10, color = "black"),
+    axis.text.x = element_text(size = 10, color = "black"),
+    axis.title = element_blank(),
+  #  axis.line.y = element_line(color = "white"),
+    panel.background = element_blank(),
+    panel.border = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(1, 0, 0, 0), "cm"),
+    legend.position = "none"
+  ) +
+  labs(caption = "HAM-A (Hamilton Rating Scale for Anxiety:) Ermittlung des Schweregrads der Angstsymptomatik (Fremdbewertung)")
+
+
+SPIN_data <- dummy_data %>% 
+  select(SPIN) %>%
+  pivot_longer(SPIN) %>%
+  mutate(name = str_replace(name, "_", "-"))
+  
+
+
+SPIN_plot <- SPIN_data %>%
+  ggplot(., aes(x = value, y = name)) +
+  annotate(
+    "text",
+    x = c(11.5, 26, 35.5, 45.5, 58.5),
+    y = 2.05,
+    label = c("keine", "leicht", "moderat", "schwer", "sehr schwer")
+  ) +
+    geom_segment(aes(
+    x = 0,
+    xend = 68,
+    y = 1 ,
+    yend = 1
+  ),
+  size = 1,
+  color = "#3B3B3BBF") +
+
+  geom_segment(
+    aes(
+      x = 0,
+      xend = 0,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 21,
+      xend = 21,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 30,
+      xend = 30,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  
+  geom_segment(
+    aes(
+      x = 40,
+      xend = 40,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  geom_segment(
+    aes(
+      x = 50,
+      xend = 50,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  
+  geom_segment(
+    aes(
+      x = 68,
+      xend = 68,
+      y = 0 ,
+      yend = 2
+    ),
+    linetype = "dashed",
+    colour = "#0073C2FF",
+    size = 1
+  ) +
+  scale_x_continuous(
+    limits = c(-0.25, 68.25),
+    breaks = c(0, 21, 30, 40, 50, 68),
+    expand = c(0, 0)
+  ) +
+geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
+    scale_y_continuous(
+    limits = c(0,2.25),
+    breaks = c(1),
+    labels = "SPIN",
+    expand = c(0, 0)
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 10, color = "black"),
+    axis.text.x = element_text(size = 10, color = "black"),
+    axis.title = element_blank(),
+  #  axis.line.y = element_line(color = "white"),
+    panel.background = element_blank(),
+    panel.border = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(1, 0, 0, 0), "cm"),
+    legend.position = "none"
+  ) +
+  labs(caption = "SPIN (Social Phobia Inventory): Ermittlung des Schweregrads der sozialen Ängste (Selbstbewertung)")
+
+
+
+CTQ_data <- dummy_data %>%
+  select(matches("Emo|Körper|Sex")) %>%
+  pivot_longer(cols = matches("Emo|Körper|Sex")) %>%
+  mutate(
+    name = str_to_title(str_replace(name, "_", " ")),
+    category = case_when(
+      name == "Emotionale Misshandlung" &
+        value %in% c(5:8) ~ "kein/minimal",
+      name == "Emotionale Misshandlung" &
+        value %in% c(9:12) ~ "gering/mäßig",
+      name == "Emotionale Misshandlung" &
+        value %in% c(13:15) ~ "mäßig/schwer",
+      name == "Emotionale Misshandlung" &
+        value %in% c(16:25) ~ "schwer/extrem",
+      name == "Körperliche Misshandlung" &
+        value %in% c(5:7) ~ "kein/minimal",
+      name == "Körperliche Misshandlung" &
+        value %in% c(8:9) ~  "gering/mäßig",
+      name == "Körperliche Misshandlung" &
+        value %in% c(10:12) ~  "mäßig/schwer",
+      name == "Körperliche Misshandlung" &
+        value %in% c(13:25) ~  "schwer/extrem",
+      name == "Sexueller Missbrauch" &
+        value %in% c(5) ~ "kein/minimal",
+      name == "Sexueller Missbrauch" &
+        value %in% c(6:7) ~ "gering/mäßig",
+      name == "Sexueller Missbrauch" &
+        value %in% c(8:12) ~ "mäßig/schwer",
+      name == "Sexueller Missbrauch" &
+        value %in% c(13:25) ~  "schwer/extrem",
+      name == "Emotionale Vernachlässigung" &
+        value %in% c(5:9) ~   "kein/minimal",
+      name == "Emotionale Vernachlässigung" &
+        value %in% c(10:14) ~   "gering/mäßig",
+      name == "Emotionale Vernachlässigung" &
+        value %in% c(15:17) ~   "mäßig/schwer",
+      name == "Emotionale Vernachlässigung" &
+        value %in% c(18:25) ~   "schwer/extrem",
+      name == "Körperliche Vernachlässigung" &
+        value %in% c(5:7) ~    "kein/minimal",
+      name == "Körperliche Vernachlässigung" &
+        value %in% c(8:9) ~  "gering/mäßig",
+      name == "Körperliche Vernachlässigung" &
+        value %in% c(10:12) ~    "mäßig/schwer",
+      name == "Körperliche Vernachlässigung" &
+        value %in% c(13:25) ~     "schwer/extrem"
+    )
+  )
+
+
+CTQ_plot <- CTQ_data %>%
+  ggplot(.,
+         aes(
+           y = factor(name, levels = sort(name, decreasing = TRUE)),
+           x = value,
+           color = name,
+           fill = name,
+           label = category
+         )) +
+  scale_x_continuous(breaks = seq(5, 25, by = 5), limits = c(4.85, 28), expand = c(0.01,0)) +
+  geom_point(size = 4.75) +
+  geom_segment(aes(
+    x = 5,
+    xend = value,
+    y = name ,
+    yend = name
+  ),
+  size = 1.1) +
+  geom_text(
+    color = "black",
+    nudge_x = 1.75,
+    nudge_y = 0,
+    size = 3.5
+  ) +
+  ylab("") +
+  xlab("Wert") +
+  scale_fill_manual(values = c(
+    "#003C67FF",
+    "#8F7700FF",
+    "#3B3B3BFF",
+    "#CD534CFF",
+    "#4A6990FF"
+  )) +
+  scale_color_manual(values = c(
+    "#003C67FF",
+    "#8F7700FF",
+    "#3B3B3BFF",
+    "#CD534CFF",
+    "#4A6990FF"
+  )) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 10, color = "black"),
+    axis.text.x = element_text(size = 10, color = "black"),
+    axis.title.y = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.title =  element_text(hjust = 0, size = 10),
+    plot.margin = unit(c(0, 0, 0, 0), "cm"),
+    legend.position = "none"
+  )  +
+  labs(caption = "\nCTQ (Childhood Trauma Questionnaire): Erhebung von Misshandlungen in Kindheit und Jugend")
+
+```
+\vspace{-1cm}
+### Funktionsniveau & Persönlichkeitsprofil
+```{r, fig.height = 2.5, fig.width = 9.5, fig.align="left"}
+(GAF_plot | PID_plot) + plot_layout(widths = c(2, 2))
+```
+
+### Depression & Angst
+```{r, fig.height = 5, fig.width = 9.5, fig.align="left"}
+HAM_D_plot + QIDS_plot + HAM_A_plot+ SPIN_plot + plot_layout(nrow = 4)
+```
+
+### Kindheitstraumata
+```{r, fig.height = 2.4, fig.width = 9.5, fig.align="left"}
+CTQ_plot
+```
