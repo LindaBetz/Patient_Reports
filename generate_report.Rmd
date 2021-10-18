@@ -3,7 +3,7 @@ output:
   pdf_document:
     latex_engine: xelatex
 mainfont: "Arial"
-geometry: "left=1.5cm,right=1.5cm,top=0.1cm,bottom=0.1cm"
+geometry: "left=1.5cm, right=1.5cm, top=0.1cm, bottom=0.1cm"
 
 ---
 
@@ -22,8 +22,8 @@ date: `r format(Sys.Date(), "%d.%m.%Y")`
 ---
 
 ```{r}
-# generate GAF plot
 
+# generate GAF plot
 GAF_data <- dummy_data %>%
   select(GAF_lifetime, GAF_follow_up) %>%
   pivot_longer(cols = c(GAF_lifetime, GAF_follow_up))
@@ -90,6 +90,8 @@ GAF_plot <- GAF_data %>%
   ) +
  labs(caption = "\nGAF (Global Assessment of Functioning): \nErfassung des allgemeinen Funktionsniveau")
 
+
+# generate PID plot
 PID_data <- dummy_data %>%
   select(matches("PID")) %>%
   select(-PID_gesamt) %>%
@@ -128,13 +130,12 @@ PID_plot <- PID_data %>%
   labs(caption = "\nPID-5 BF (Personality Inventory for DSM-5–brief form): \nProfil maladaptiver Persönlichkeitseigenschaften nach DSM-5")
 
 
+# generate HAM-D plot
 HAM_D_data <- dummy_data %>% 
   select(HAM_D) %>%
   pivot_longer(HAM_D) %>%
   mutate(name = str_replace(name, "_", "-"))
   
-
-
 HAM_D_plot <- HAM_D_data %>%
   ggplot(., aes(x = value, y = name)) +
   annotate(
@@ -187,8 +188,6 @@ HAM_D_plot <- HAM_D_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
-  
   geom_segment(
     aes(
       x = 18,
@@ -223,7 +222,6 @@ HAM_D_plot <- HAM_D_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 18,
@@ -263,7 +261,6 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
     axis.text.y = element_text(size = 10, color = "black"),
     axis.text.x = element_text(size = 10, color = "black"),
     axis.title = element_blank(),
-  #  axis.line.y = element_line(color = "white"),
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.minor = element_blank(),
@@ -275,15 +272,11 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
   ) +
   labs(caption = "HAM-D (Hamilton Rating Scale for Depression): Ermittlung des Schweregrads einer depressiven Störung (Fremdbewertung)")
 
-
-
-
+# generate QIDS plot
 QIDS_data <- dummy_data %>% 
   select(QIDS) %>%
   pivot_longer(QIDS) %>%
   mutate(name = str_replace(name, "_", "-"))
-  
-
 
 QIDS_plot <- QIDS_data %>%
   ggplot(., aes(x = value, y = name)) +
@@ -325,7 +318,6 @@ QIDS_plot <- QIDS_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 10,
@@ -337,8 +329,6 @@ QIDS_plot <- QIDS_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
-  
   geom_segment(
     aes(
       x = 15,
@@ -361,7 +351,6 @@ QIDS_plot <- QIDS_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 27,
@@ -390,7 +379,6 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
     axis.text.y = element_text(size = 10, color = "black"),
     axis.text.x = element_text(size = 10, color = "black"),
     axis.title = element_blank(),
-  #  axis.line.y = element_line(color = "white"),
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.minor = element_blank(),
@@ -403,12 +391,11 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
   labs(caption = "QIDS (Quick Inventory of Depressive Symptomatology): Ermittlung des Schweregrads einer depressiven (Selbstbewertung)")
 
 
+# generate HAM-A plot
 HAM_A_data <- dummy_data %>% 
   select(HAM_A) %>%
   pivot_longer(HAM_A) %>%
   mutate(name = str_replace(name, "_", "-"))
-  
-
 
 HAM_A_plot <- HAM_A_data %>%
   ggplot(., aes(x = value, y = name)) +
@@ -426,7 +413,6 @@ HAM_A_plot <- HAM_A_data %>%
   ),
   size = 1,
   color = "#3B3B3BBF") +
-
   geom_segment(
     aes(
       x = 0,
@@ -438,7 +424,6 @@ HAM_A_plot <- HAM_A_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 7,
@@ -450,7 +435,6 @@ HAM_A_plot <- HAM_A_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 14,
@@ -473,7 +457,6 @@ HAM_A_plot <- HAM_A_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 56,
@@ -502,7 +485,6 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
     axis.text.y = element_text(size = 10, color = "black"),
     axis.text.x = element_text(size = 10, color = "black"),
     axis.title = element_blank(),
-  #  axis.line.y = element_line(color = "white"),
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.minor = element_blank(),
@@ -515,12 +497,11 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
   labs(caption = "HAM-A (Hamilton Rating Scale for Anxiety:) Ermittlung des Schweregrads der Angstsymptomatik (Fremdbewertung)")
 
 
+# generate SPIN plot
 SPIN_data <- dummy_data %>% 
   select(SPIN) %>%
   pivot_longer(SPIN) %>%
   mutate(name = str_replace(name, "_", "-"))
-  
-
 
 SPIN_plot <- SPIN_data %>%
   ggplot(., aes(x = value, y = name)) +
@@ -574,8 +555,6 @@ SPIN_plot <- SPIN_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
-  
   geom_segment(
     aes(
       x = 40,
@@ -598,7 +577,6 @@ SPIN_plot <- SPIN_data %>%
     colour = "#0073C2FF",
     size = 1
   ) +
-  
   geom_segment(
     aes(
       x = 68,
@@ -627,7 +605,6 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
     axis.text.y = element_text(size = 10, color = "black"),
     axis.text.x = element_text(size = 10, color = "black"),
     axis.title = element_blank(),
-  #  axis.line.y = element_line(color = "white"),
     panel.background = element_blank(),
     panel.border = element_blank(),
     panel.grid.minor = element_blank(),
@@ -640,6 +617,7 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
   labs(caption = "SPIN (Social Phobia Inventory): Ermittlung des Schweregrads der sozialen Ängste (Selbstbewertung)")
 
 
+# generate CTQ plot
 
 CTQ_data <- dummy_data %>%
   select(matches("Emo|Körper|Sex")) %>%
@@ -689,7 +667,6 @@ CTQ_data <- dummy_data %>%
         value %in% c(13:25) ~     "schwer/extrem"
     )
   )
-
 
 CTQ_plot <- CTQ_data %>%
   ggplot(.,
