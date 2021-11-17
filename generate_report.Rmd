@@ -2,37 +2,48 @@
 output:
   pdf_document:
     latex_engine: xelatex
-mainfont: "Arial"
+#mainfont: "Arial"
 geometry: "left=1.5cm, right=1.5cm, top=0.1cm, bottom=0.1cm"
-
+params:
+  REDCap_ID: NA
+  data: NA
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, dev = "cairo_pdf")
 library(tidyverse)
 library(patchwork)
-library(readxl)
-dummy_data <- read_excel("dummy_data.xlsx")
 ```
 ---
 title: | 
-  | \vspace{-0.75cm} \Large `r paste(dummy_data$Vorname, dummy_data$Name)`
-  | \vspace{-0.05cm} \Large `r paste("geboren am", dummy_data$Geburtsdatum)` 
+  | \vspace{-0.75cm} \Large `r paste(data$vorn, data$nachn)`
+  | \vspace{-0.05cm} \Large `r paste("geboren am", data$geb)` 
 
 date: `r format(Sys.Date(), "%d.%m.%Y")`
 ---
+```{r, message=FALSE, echo=FALSE, include=FALSE}
+# preprocessing of the data coming from REDCap
+
+# some parameters to set, come from Shiny App
+REDCap_ID <- params$REDCap_ID # participant code (in "")
+# load data
+data <- read_csv(params$data)
+
+# first, filter the ID we want to generate the report for
+data <- data %>% filter(record_id == REDCap_ID)
+
+```
 
 ```{r}
-
 # generate GAF plot
-GAF_data <- dummy_data %>%
-  select(GAF_lifetime, GAF_follow_up) %>%
-  pivot_longer(cols = c(GAF_lifetime, GAF_follow_up))
+GAF_data <- data %>%
+  select(gaf_lifetime, gaf_follow_up) %>%
+  pivot_longer(cols = c(gaf_lifetime, gaf_follow_up))
 
 GAF_plot <- GAF_data %>%
   ggplot(., aes(
     label = value,
-    x = factor(name, levels = c("GAF_lifetime", "GAF_follow_up")),
+    x = factor(name, levels = c("gaf_lifetime", "gaf_follow_up")),
     y = value
   )) +
   xlab("Zeit") +
@@ -93,17 +104,17 @@ GAF_plot <- GAF_data %>%
 
 
 # generate PID plot
-PID_data <- dummy_data %>%
-  select(matches("PID")) %>%
-  select(-PID_gesamt) %>%
-  pivot_longer(cols = matches("PID")) %>%
+PID_data <- data %>%
+  mutate(pid_gesamt = pid_gesamt/5) %>%
+  select(matches("pid")) %>%
+  pivot_longer(cols = matches("pid")) %>%
   mutate(name = str_to_title(str_replace(
-    str_replace(name, pattern = "PID_", ""), "_", " "
+    str_replace(name, pattern = "pid_", ""), "_", " "
   )))
 
 PID_plot <- PID_data %>%
   ggplot(., aes(
-    y = factor(name, levels = sort(name, decreasing = TRUE)),
+    y = factor(name, levels = c("Psychoticism", "Negative", "Disinhibition" "Detachment", "Antagonism", "Gesamt")),
     x = value,
     color = name,
     fill = name
@@ -118,7 +129,7 @@ PID_plot <- PID_data %>%
     size = 1.1) +
   ylab("") +
   xlab("Wert") +
-  scale_color_manual( values = c("#0073C2FF" ,"#EFC000FF" ,"#868686FF" ,"#CD534CFF" ,"#7AA6DCFF")) +
+  scale_color_manual( values = c("#0073C2FF" ,"#EFC000FF" ,"#868686FF" ,"#CD534CFF" ,"#7AA6DCFF", "#8F7700FF")) +
   theme_bw() +
   theme(
     axis.text = element_text(size = 10, color = "black"),
@@ -132,9 +143,9 @@ PID_plot <- PID_data %>%
 
 
 # generate HAM-D plot
-HAM_D_data <- dummy_data %>% 
-  select(HAM_D) %>%
-  pivot_longer(HAM_D) %>%
+HAM_D_data <- data %>% 
+  select(ham_d) %>%
+  pivot_longer(ham_d) %>%
   mutate(name = str_replace(name, "_", "-"))
   
 HAM_D_plot <- HAM_D_data %>%
@@ -274,9 +285,9 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
   labs(caption = "HAM-D (Hamilton Rating Scale for Depression): Ermittlung des Schweregrads einer depressiven Störung (Fremdbewertung)")
 
 # generate QIDS plot
-QIDS_data <- dummy_data %>% 
-  select(QIDS) %>%
-  pivot_longer(QIDS) %>%
+QIDS_data <- data %>% 
+  select(qids) %>%
+  pivot_longer(qids) %>%
   mutate(name = str_replace(name, "_", "-"))
 
 QIDS_plot <- QIDS_data %>%
@@ -393,9 +404,9 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
 
 
 # generate HAM-A plot
-HAM_A_data <- dummy_data %>% 
-  select(HAM_A) %>%
-  pivot_longer(HAM_A) %>%
+HAM_A_data <- data %>% 
+  select(ham_a) %>%
+  pivot_longer(ham_a) %>%
   mutate(name = str_replace(name, "_", "-"))
 
 HAM_A_plot <- HAM_A_data %>%
@@ -499,9 +510,9 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
 
 
 # generate SPIN plot
-SPIN_data <- dummy_data %>% 
-  select(SPIN) %>%
-  pivot_longer(SPIN) %>%
+SPIN_data <- data %>% 
+  select(spin) %>%
+  pivot_longer(spin) %>%
   mutate(name = str_replace(name, "_", "-"))
 
 SPIN_plot <- SPIN_data %>%
@@ -620,8 +631,26 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
 
 # generate CTQ plot
 
-CTQ_data <- dummy_data %>%
-  select(matches("Emo|Körper|Sex")) %>%
+CTQ_data <- data %>%
+mutate(across(c("ctq_emot_vernachl_5", # first recode some items
+                "ctq_emot_vernachl_7",
+                "ctq_emot_vernachl_13",
+                "ctq_emot_vernachl_19",
+                "ctq_emot_vernachl_28",
+                "ctq_k_rp_vernachl_2",
+                "ctq_k_rp_vernachl_26"),
+              ~case_when(.x == 1 ~ 5,
+                         .x == 2 ~ 4,
+                         .x == 3 ~ 3,
+                         .x == 4 ~ 2,
+                         .x == 5 ~ 1))) %>%
+mutate(Emotionale_Vernachlässigung = rowSums(select(., matches("ctq_emot_vernachl_"))),
+       Körperliche_Vernachlässigung = rowSums(select(., matches("tq_k_rp_vernachl_")))) %>%
+  rename(Körperliche_Misshandlung = ctq_k_rperl_missh,
+        Sexueller_Missbrauch = ctq_sexueller_missb,
+       Emotionale_Misshandlung = ctq_emot_missh) %>%
+    select(.,-matches("ctq_"))  %>%
+select(matches("Emo|Körper|Sex")) %>%
   pivot_longer(cols = matches("Emo|Körper|Sex")) %>%
   mutate(
     name = str_to_title(str_replace(name, "_", " ")),
