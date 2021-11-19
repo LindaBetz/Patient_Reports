@@ -4,13 +4,12 @@ packages <-
   c("tidyverse",
     "pathwork",
     "shiny",
-    "rmarkdown")
+    "rmarkdown",
+    "tinytex")
 if (length(missing_pkgs <-
            setdiff(packages, rownames(installed.packages()))) > 0) {
   message("Installing missing package(s): ",
           paste(missing_pkgs, collapse = ", "))
   install.packages(missing_pkgs)
 }
-
-install.packages("tinytex")
 tinytex::install_tinytex()  
