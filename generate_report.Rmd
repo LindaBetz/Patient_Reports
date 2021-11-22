@@ -2,7 +2,7 @@
 output:
   pdf_document:
     latex_engine: xelatex
-#mainfont: "Arial"
+mainfont: "Arial"
 geometry: "left=1.5cm, right=1.5cm, top=0.1cm, bottom=0.1cm"
 params:
   REDCap_ID: NA
@@ -13,26 +13,24 @@ params:
 knitr::opts_chunk$set(echo = FALSE, dev = "cairo_pdf")
 library(tidyverse)
 library(patchwork)
+
+# load data
+data <- read_csv(params$data)
+
+# some parameters to set, come from Shiny App
+REDCap_ID <- params$REDCap_ID # participant code (in "")
+
+# filter the ID we want to generate the report for
+data <- data %>% filter(record_id == REDCap_ID)
+
 ```
 ---
 title: | 
   | \vspace{-0.75cm} \Large `r paste(data$vorn, data$nachn)`
-  | \vspace{-0.05cm} \Large `r paste("geboren am", data$geb)` 
+  | \vspace{-0.05cm} \Large `r paste("geboren am", format(data$geb, "%d.%m.%Y"))` 
 
 date: `r format(Sys.Date(), "%d.%m.%Y")`
 ---
-```{r, message=FALSE, echo=FALSE, include=FALSE}
-# preprocessing of the data coming from REDCap
-
-# some parameters to set, come from Shiny App
-REDCap_ID <- params$REDCap_ID # participant code (in "")
-# load data
-data <- read_csv(params$data)
-
-# first, filter the ID we want to generate the report for
-data <- data %>% filter(record_id == REDCap_ID)
-
-```
 
 ```{r}
 # generate GAF plot
@@ -114,7 +112,7 @@ PID_data <- data %>%
 
 PID_plot <- PID_data %>%
   ggplot(., aes(
-    y = factor(name, levels = c("Psychoticism", "Negative", "Disinhibition" "Detachment", "Antagonism", "Gesamt")),
+    y = factor(name, levels = c("Psychoticism", "Negative", "Disinhibition", "Detachment", "Antagonism", "Gesamt")),
     x = value,
     color = name,
     fill = name
