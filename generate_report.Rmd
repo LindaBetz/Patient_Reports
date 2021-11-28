@@ -103,8 +103,8 @@ GAF_plot <- GAF_data %>%
 
 # generate PID plot
 PID_data <- data %>%
-  mutate(pid_gesamt = pid_gesamt/5) %>%
   select(matches("pid")) %>%
+  mutate_all(~round(., 0)) %>%
   pivot_longer(cols = matches("pid")) %>%
   mutate(name = str_to_title(str_replace(
     str_replace(name, pattern = "pid_", ""), "_", " "
@@ -117,7 +117,7 @@ PID_plot <- PID_data %>%
     color = name,
     fill = name
   )) +
-  scale_x_continuous(limits = c(0,15), breaks = seq(0,15,5)) +
+  scale_x_continuous(limits = c(0,3), breaks = seq(0,3,1)) +
   geom_point(size = 4.75) +
   geom_segment(aes(
     x = 0,
