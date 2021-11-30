@@ -46,8 +46,8 @@ GAF_plot <- GAF_data %>%
   )) +
   xlab("Zeit") +
   ylab("Funktionsniveau\n") +
-  scale_y_continuous(limits = c(0, 100)) +
-  geom_text(hjust = 0.1, vjust = -1.5) +
+  scale_y_continuous(limits = c(0, 120), breaks = seq(0, 100, 25)) +
+  geom_text(hjust = 0.4, vjust = -1.5) +
   geom_segment(aes(
     # horizontal segment until first value
     x = 0,
@@ -81,7 +81,7 @@ GAF_plot <- GAF_data %>%
   geom_point(size = 4.75, color = "#868686FF") +
   annotate(
     "text",
-    y = (GAF_data$value[1] + GAF_data$value[2]) / 2,
+    y = ((GAF_data$value[1] + GAF_data$value[2]) / 2) + 5,
     x = 1.375,
     label = paste0("- ",  100 * round((GAF_data$value[1] - GAF_data$value[2]) / GAF_data$value[1], 2
     ), "%")
@@ -487,7 +487,7 @@ geom_point(aes(x = value, y = 1), size = 4.75, color = "#CD534CFF") +
     scale_y_continuous(
     limits = c(0,2.25),
     breaks = c(1),
-    labels = "HAM-D",
+    labels = "HAM-A",
     expand = c(0, 0)
   ) +
   theme_bw() +
