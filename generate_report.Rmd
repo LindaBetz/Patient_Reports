@@ -44,10 +44,12 @@ GAF_plot <- GAF_data %>%
     x = factor(name, levels = c("gaf_lifetime", "gaf_follow_up")),
     y = value
   )) +
-  xlab("Zeit") +
+  xlab(" ") +
   ylab("Funktionsniveau\n") +
   scale_y_continuous(limits = c(0, 120), breaks = seq(0, 100, 25)) +
+  scale_x_discrete(labels = c("gaf_lifetime" = "Maximum im letzten Jahr", "gaf_follow_up" = "Aktuell")) +
   geom_text(hjust = 0.4, vjust = -1.5) +
+  
   geom_segment(aes(
     # horizontal segment until first value
     x = 0,
@@ -88,17 +90,15 @@ GAF_plot <- GAF_data %>%
   ) +
   theme_bw() +
   theme(
-    axis.ticks.x =  element_blank(),
     axis.text = element_text(size = 10, color = "black"),
-    axis.text.x = element_blank(),
     axis.title = element_text(size = 10),
- panel.border = element_rect(colour = "black"),
- plot.caption = element_text(hjust = 0, size = 10),
+    panel.border = element_rect(colour = "black"),
+    plot.caption = element_text(hjust = 0, size = 10),
     plot.title =  element_text(hjust = 0, size = 10),
-    plot.margin = unit(c(0,0,0,0), "cm")
-
+    plot.margin = unit(c(0, 0, 0, 0), "cm")
+    
   ) +
- labs(caption = "\nGAF (Global Assessment of Functioning): \nErfassung des allgemeinen Funktionsniveau")
+  labs(caption = "\nGAF (Global Assessment of Functioning): \nErfassung des allgemeinen Funktionsniveau")
 
 
 # generate PID plot
