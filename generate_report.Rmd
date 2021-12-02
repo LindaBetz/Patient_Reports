@@ -35,19 +35,19 @@ date: `r format(Sys.Date(), "%d.%m.%Y")`
 ```{r}
 # generate GAF plot
 GAF_data <- data %>%
-  select(gaf_lifetime, gaf_follow_up) %>%
-  pivot_longer(cols = c(gaf_lifetime, gaf_follow_up))
+  select(gaf_past_year, gaf_current) %>%
+  pivot_longer(cols = c(gaf_past_year, gaf_current))
 
 GAF_plot <- GAF_data %>%
   ggplot(., aes(
     label = value,
-    x = factor(name, levels = c("gaf_lifetime", "gaf_follow_up")),
+    x = factor(name, levels = c("gaf_past_year", "gaf_current")),
     y = value
   )) +
   xlab(" ") +
   ylab("Funktionsniveau\n") +
   scale_y_continuous(limits = c(0, 120), breaks = seq(0, 100, 25)) +
-  scale_x_discrete(labels = c("gaf_lifetime" = "Maximum im letzten Jahr", "gaf_follow_up" = "Aktuell")) +
+  scale_x_discrete(labels = c("gaf_past_year" = "Maximum im letzten Jahr", "gaf_current" = "Aktuell")) +
   geom_text(hjust = 0.4, vjust = -1.5) +
   
   geom_segment(aes(
