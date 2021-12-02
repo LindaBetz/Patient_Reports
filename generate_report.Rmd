@@ -84,7 +84,7 @@ GAF_plot <- GAF_data %>%
   annotate(
     "text",
     y = ((GAF_data$value[1] + GAF_data$value[2]) / 2) + 5,
-    x = 1.375,
+    x = 1.45,
     label = paste0("- ",  100 * round((GAF_data$value[1] - GAF_data$value[2]) / GAF_data$value[1], 2
     ), "%")
   ) +
