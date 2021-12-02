@@ -20,7 +20,7 @@ shinyApp(
             
             fileInput(
                 "data",
-                label = "Wählen Sie hier die Datei für die Auswertung aus (der Name der Datei beginnt mit FETZDigital_)",
+                label = "Wählen Sie hier die Datei für die Auswertung aus (der Name der Datei beginnt mit FETZDigital...)",
                 multiple = FALSE,
                 accept = ".csv",
                 width = '100%',
@@ -28,7 +28,7 @@ shinyApp(
                 placeholder = "Keine Datei ausgewählt"
             ),
             helpText(
-                "Klicken Sie auf den Knopf unten, um die .pdf-Auswertungs-Datei zu erstellen und zu speichern. Beachten Sie, dass es einige Minuten dauern kann, bis die Datei fertig verarbeitet ist."
+                "Klicken Sie auf den Knopf unten, um die .pdf-Auswertungs-Datei zu erstellen und zu speichern. Beachten Sie, dass es einige Momente dauern kann, bis die Datei fertig verarbeitet ist."
             ),
             downloadButton("report", "Auswertung erstellen")
         )
